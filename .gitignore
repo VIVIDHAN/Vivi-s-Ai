@@ -1,6 +1,16 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+.env
+
+# AI Data & Models
 chroma_db/
-vivi_accessKeys.csv
-.DS_Store
+static/
+*.safetensors
+*.bin
+
+# Sensitive Keys
+*.pem
+*access*key*
+*access key*
