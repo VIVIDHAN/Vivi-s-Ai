@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vivi's Coding Corner</title>
+</head>
+<body>
+  <h1>Welcome to Vivi's Coding Corner!</h1>
+  <p>This is a simple HTML page created by Vivi.</p>
+  <ul>
+    <li>Learning to code is fun!</li>
+    <li>Coding is a great skill to have!</li>
+    <li>Keep practicing and you'll get better!</li>
+  </ul>
+  <img src="your-image.jpg" alt="Vivi's image">
+</body>
+</html>

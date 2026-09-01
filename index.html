@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivi's AI</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons for cool UI icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Marked.js for parsing AI markdown (like code blocks) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Google Fonts: Raleway -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Raleway', sans-serif !important;
+        }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* Loading animation dots */
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out;
+            fill: #94A3B8;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        
+        /* Markdown Styles */
+        .markdown-body pre {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .markdown-body code {
+            background-color: #334155;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            color: #fca5a5;
+        }
+        .markdown-body pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+        .markdown-body p { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="bg-[#0B0C0C] h-screen flex flex-col font-sans text-[#ececec]">
+
+    <!-- Header -->
+    <header class="bg-[#0B0C0C] border-b border-[#2f2f2f] px-6 py-4 flex items-center justify-between z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
+                <i class="ph ph-robot text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-[#ececec] tracking-tight">Vivi's AI</h1>
+                <p class="text-xs text-green-400 font-medium flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    Running Locally (Llama 3.2)
+                </p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button id="clear-btn" class="p-2 text-gray-400 hover:text-red-400 hover:bg-[#2f2f2f] rounded-lg transition" title="Clear Memory"><i class="ph ph-trash text-xl"></i></button>
+            <button class="p-2 text-gray-400 hover:text-gray-300 hover:bg-[#2f2f2f] rounded-lg transition"><i class="ph ph-gear text-xl"></i></button>
+        </div>
+    </header>
+
+    <!-- Chat Area -->
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6">
+        
+        <!-- Welcome / Empty State -->
+        <div id="empty-state" class="flex flex-col items-center justify-center h-full mt-12 text-center fade-in">
+            <div class="w-16 h-16 rounded-2xl bg-[#0B0C0C] border border-[#2f2f2f] flex items-center justify-center text-white shadow-xl mb-6">
+                <i class="ph ph-sparkle text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-[#ececec] tracking-tight mb-2">Vivi's AI</h2>
+            <p class="text-gray-400 mb-8 max-w-md">Your AI. Your machine.<br>Your data stays local.</p>
+            
+            <div class="grid grid-cols-2 gap-3 max-w-lg w-full">
+                <button onclick="document.getElementById('message-input').value='Write a Python script to...'; document.getElementById('message-input').focus();" class="flex flex-col items-start p-4 bg-[#0B0C0C] border border-[#2f2f2f] rounded-xl hover:bg-[#2f2f2f] transition text-left group">
+                    <i class="ph ph-code text-xl text-blue-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-semibold text-[#ececec] text-sm">Code</span>
+                    <span class="text-xs text-gray-400 mt-1">Write, debug, or refactor</span>
+                </button>
+                <button onclick="document.getElementById('message-input').value='Explain how...'; document.getElementById('message-input').focus();" class="flex flex-col items-start p-4 bg-[#0B0C0C] border border-[#2f2f2f] rounded-xl hover:bg-[#2f2f2f] transition text-left group">
+                    <i class="ph ph-books text-xl text-green-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-semibold text-[#ececec] text-sm">Learn</span>
+                    <span class="text-xs text-gray-400 mt-1">Understand complex topics</span>
+                </button>
+                <button onclick="document.getElementById('file-upload').click();" class="flex flex-col items-start p-4 bg-[#0B0C0C] border border-[#2f2f2f] rounded-xl hover:bg-[#2f2f2f] transition text-left group">
+                    <i class="ph ph-file-text text-xl text-orange-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-semibold text-[#ececec] text-sm">Files (RAG)</span>
+                    <span class="text-xs text-gray-400 mt-1">Upload docs to memory</span>
+                </button>
+                <button onclick="document.getElementById('message-input').value='Brainstorm ideas for...'; document.getElementById('message-input').focus();" class="flex flex-col items-start p-4 bg-[#0B0C0C] border border-[#2f2f2f] rounded-xl hover:bg-[#2f2f2f] transition text-left group">
+                    <i class="ph ph-lightbulb text-xl text-yellow-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-semibold text-[#ececec] text-sm">Ideas</span>
+                    <span class="text-xs text-gray-400 mt-1">Brainstorm strategies</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Input Area -->
+    <footer class="bg-[#0B0C0C] p-4">
+        <div class="max-w-4xl mx-auto relative flex items-end gap-2 bg-[#2f2f2f] rounded-2xl p-2 focus-within:ring-2 focus-within:ring-gray-500 transition-all">
+            <input type="file" id="file-upload" class="hidden" accept=".txt,.pdf,.csv,.docx">
+            <button onclick="document.getElementById('file-upload').click();" class="p-3 text-gray-400 hover:text-white transition rounded-xl hover:bg-[#3f3f3f]" title="Upload Document (RAG)"><i class="ph ph-paperclip text-xl"></i></button>
+            <textarea id="message-input" rows="1" class="w-full bg-transparent resize-none outline-none py-3 px-2 text-[#ececec] placeholder-gray-400 max-h-32" placeholder="Message Vivi's AI..."></textarea>
+            <button id="send-btn" class="p-3 bg-white text-black rounded-xl hover:bg-gray-200 transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="ph ph-paper-plane-right text-xl"></i>
+            </button>
+        </div>
+        <div class="text-center mt-2">
+            <p class="text-[10px] text-gray-500">AI can make mistakes. Check important info.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Generate or retrieve unique Session ID for multi-user isolation
+        let sessionId = localStorage.getItem('vivi_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('vivi_session_id', sessionId);
+        }
+
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-btn');
+        
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight < 128 ? this.scrollHeight : 128) + 'px';
+        });
+
+        // Handle Enter key (Send) vs Shift+Enter (New Line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            // 1. Add User Message to UI
+            appendMessage(text, 'user');
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // 2. Add Loading Indicator to UI
+            const loadingId = appendLoading();
+
+            try {
+                // 3. Send to our Python Backend (FastAPI)
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, session_id: sessionId })
+                });
+
+                const data = await response.json();
+                
+                // 4. Remove loading indicator and show AI response
+                document.getElementById(loadingId).remove();
+                
+                if (data.response) {
+                    appendMessage(data.response, 'ai');
+                } else {
+                    appendMessage("Sorry, I encountered an error. " + (data.error || ""), 'ai', true);
+                }
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                appendMessage("Failed to connect to the backend server. Is start.sh running?", 'ai', true);
+            }
+        }
+
+        function appendMessage(text, sender, isError = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex gap-4 max-w-3xl w-full mx-auto ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white shadow-sm mt-1 ${sender === 'user' ? 'bg-[#3f3f3f]' : 'bg-[#10a37f]'}`;
+            avatar.innerHTML = sender === 'user' ? '<i class="ph ph-user"></i>' : '<i class="ph ph-robot"></i>';
+
+            const bubble = document.createElement('div');
+
+            if (sender === 'user') {
+                bubble.className = 'bg-[#2f2f2f] text-[#ececec] p-4 rounded-2xl rounded-tr-sm leading-relaxed max-w-[85%]';
+                bubble.textContent = text; // pure text for user to prevent injection
+            } else {
+                bubble.className = `markdown-body bg-transparent text-[#ececec] py-2 rounded-2xl leading-relaxed w-full`;
+                if (isError) bubble.className += ' text-red-400';
+                bubble.innerHTML = marked.parse(text); // parse markdown safely
+            }
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(bubble);
+            chatContainer.appendChild(wrapper);
+            
+            // Scroll to bottom
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+        }
+
+        function appendLoading() {
+            const id = 'loading-' + Date.now();
+            const wrapper = document.createElement('div');
+            wrapper.id = id;
+            wrapper.className = 'flex gap-4 max-w-3xl w-full mx-auto';
+            
+            wrapper.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-[#10a37f] flex-shrink-0 flex items-center justify-center text-white shadow-sm mt-1">
+                    <i class="ph ph-robot"></i>
+                </div>
+                <div class="bg-transparent py-4 flex items-center gap-1">
+                    <svg width="24" height="10" viewBox="0 0 24 10" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="typing-dot" cx="4" cy="5" r="3" fill="#ececec"/>
+                        <circle class="typing-dot" cx="12" cy="5" r="3" fill="#ececec"/>
+                        <circle class="typing-dot" cx="20" cy="5" r="3" fill="#ececec"/>
+                    </svg>
+                </div>
+            `;
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            return id;
+        }
+        // Clear memory logic
+        const clearBtn = document.getElementById('clear-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', async () => {
+                if(confirm("Are you sure you want to wipe the AI's memory?")) {
+                    await fetch('/clear', { 
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ session_id: sessionId })
+                    });
+                    chatContainer.innerHTML = ''; // Wipe UI
+                    document.getElementById('empty-state').style.display = 'flex'; // show empty state
+                }
+            });
+        }
+
+        // File Upload (RAG) logic
+        const fileUpload = document.getElementById('file-upload');
+        if (fileUpload) {
+            fileUpload.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (document.getElementById('empty-state')) {
+                    document.getElementById('empty-state').style.display = 'none';
+                }
+
+                appendMessage(`Uploading document: ${file.name}...`, 'user');
+                appendLoading();
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const res = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    document.getElementById(chatContainer.lastChild.id)?.remove(); // remove loading
+                    
+                    if (data.status === 'success') {
+                        appendMessage(`✅ **Success:** ${data.message} You can now ask me questions about this document!`, 'ai');
+                    } else {
+                        appendMessage(`Error: ${data.error}`, 'ai', true);
+                    }
+                } catch (error) {
+                    document.getElementById(chatContainer.lastChild.id)?.remove(); // remove loading
+                    appendMessage("Network error while uploading.", 'ai', true);
+                }
+                
+                e.target.value = ''; // reset file input
+            });
+        }
+    </script>
+</body>
+</html>
